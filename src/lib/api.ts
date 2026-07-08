@@ -1,6 +1,9 @@
 import { APPS_SCRIPT_URL, APP_VERSION } from '../config/env';
 import type {
   ApiResponse,
+  AuthUser,
+  ExchangeTokenResponseData,
+  RequestLinkResponseData,
   SubmissionFormData,
   SubmitResponseData,
   VerifyResponseData,
@@ -41,19 +44,24 @@ async function postToAppsScript<T>(body: unknown): Promise<ApiResponse<T>> {
 }
 
 /** Checks that the signed-in user's email is on the allow list before we
- * show them the submission form. */
-export function verifyUser(idToken: string): Promise<ApiResponse<VerifyResponseData>> {
-  return postToAppsScript<VerifyResponseData>({ action: 'verify', idToken });
+ * show them the submission form. Works for either auth method. */
+export function verifyUser(user: AuthUser): Promise<ApiResponse<VerifyResponseData>> {
+  return postToAppsScript<VerifyResponseData>({
+    action: 'verify',
+    authMethod: user.method,
+    token: user.token,
+  });
 }
 
 /** Submits a completed translation example. */
 export function submitTranslation(
-  idToken: string,
+  user: AuthUser,
   form: SubmissionFormData,
 ): Promise<ApiResponse<SubmitResponseData>> {
   return postToAppsScript<SubmitResponseData>({
     action: 'submit',
-    idToken,
+    authMethod: user.method,
+    token: user.token,
     sourceLanguage: form.sourceLanguage,
     targetLanguage: form.targetLanguage,
     sourceText: form.sourceText,
@@ -64,4 +72,19 @@ export function submitTranslation(
     tags: form.tags,
     appVersion: APP_VERSION,
   });
+}
+
+/** Requests a one-time sign-in link be emailed to the given address.
+ * Always resolves ok:true from the backend (whether or not the email is
+ * actually on the allow list) so the API never reveals who is invited. */
+export function requestMagicLink(email: string): Promise<ApiResponse<RequestLinkResponseData>> {
+  return postToAppsScript<RequestLinkResponseData>({ action: 'requestLink', email });
+}
+
+/** Exchanges a one-time magic-link token (from the emailed URL) for a
+ * longer-lived session token used for subsequent verify/submit calls. */
+export function exchangeMagicLinkToken(
+  linkToken: string,
+): Promise<ApiResponse<ExchangeTokenResponseData>> {
+  return postToAppsScript<ExchangeTokenResponseData>({ action: 'exchangeToken', linkToken });
 }

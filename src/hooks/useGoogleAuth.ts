@@ -42,7 +42,8 @@ function userFromToken(idToken: string): AuthUser {
     email: String(payload.email ?? ''),
     name: String(payload.name ?? payload.email ?? 'Unknown user'),
     picture: typeof payload.picture === 'string' ? payload.picture : undefined,
-    idToken,
+    method: 'google',
+    token: idToken,
   };
 }
 

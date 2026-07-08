@@ -9,7 +9,7 @@ import { StatusBanner } from './StatusBanner';
 import { detectLanguage } from '../lib/detectLanguage';
 import { submitTranslation } from '../lib/api';
 import { loadDraft, clearDraft, useAutosaveDraft } from '../hooks/useAutosaveDraft';
-import type { Category, SubmissionFormData } from '../types';
+import type { AuthUser, Category, SubmissionFormData } from '../types';
 
 const EMPTY_FORM: SubmissionFormData = {
   sourceText: '',
@@ -27,10 +27,10 @@ const EMPTY_FORM: SubmissionFormData = {
 type FieldErrors = Partial<Record<keyof SubmissionFormData, string>>;
 
 interface SubmissionFormProps {
-  idToken: string;
+  user: AuthUser;
 }
 
-export function SubmissionForm({ idToken }: SubmissionFormProps) {
+export function SubmissionForm({ user }: SubmissionFormProps) {
   const [form, setForm] = useState<SubmissionFormData>(() => ({
     ...EMPTY_FORM,
     ...loadDraft(),
@@ -80,7 +80,7 @@ export function SubmissionForm({ idToken }: SubmissionFormProps) {
     }
 
     setSubmitting(true);
-    const result = await submitTranslation(idToken, form);
+    const result = await submitTranslation(user, form);
     setSubmitting(false);
 
     if (result.ok) {

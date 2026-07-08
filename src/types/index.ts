@@ -6,6 +6,11 @@
  * hunting through components for scattered inline types.
  */
 
+/** How the current user authenticated. "google" carries a signed Google
+ * ID token; "email" carries an opaque session token issued after the
+ * user clicked a one-time magic link sent to their inbox. */
+export type AuthMethod = 'google' | 'email';
+
 /** A language option shown in the searchable language dropdowns. */
 export interface LanguageOption {
   /** ISO 639-1 (or 639-3 fallback) code, e.g. "en", "fr", "zh". */
@@ -61,9 +66,11 @@ export interface SubmissionFormData {
 }
 
 /** Payload sent to the Google Apps Script backend. */
+/** Payload sent to the Google Apps Script backend. */
 export interface SubmissionPayload {
   action: 'submit';
-  idToken: string;
+  authMethod: AuthMethod;
+  token: string;
   sourceLanguage: string;
   targetLanguage: string;
   sourceText: string;
@@ -79,7 +86,8 @@ export interface SubmissionPayload {
  * on the allow list before showing them the submission form. */
 export interface VerifyPayload {
   action: 'verify';
-  idToken: string;
+  authMethod: AuthMethod;
+  token: string;
 }
 
 /** Common shape of every Apps Script JSON response. */
@@ -100,10 +108,28 @@ export interface SubmitResponseData {
   timestamp: string;
 }
 
+/** Response to requesting a magic link — deliberately the same shape
+ * whether or not the email was actually on the allow list, so the API
+ * never reveals who is invited. */
+export interface RequestLinkResponseData {
+  sent: true;
+}
+
+/** Response to successfully exchanging a one-time magic-link token for a
+ * session token. */
+export interface ExchangeTokenResponseData {
+  sessionToken: string;
+  email: string;
+  name: string;
+  role?: string;
+}
+
 /** The authenticated user, decoded from the Google ID token. */
 export interface AuthUser {
   email: string;
   name: string;
   picture?: string;
-  idToken: string;
+  method: AuthMethod;
+  /** Google ID token (method "google") or session token (method "email"). */
+  token: string;
 }

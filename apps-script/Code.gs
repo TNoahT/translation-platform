@@ -2,18 +2,25 @@
  * Code.gs
  *
  * Entry points for the Apps Script Web App. This is the only file with
- * doGet/doPost — everything else (auth, sheet access) is factored out so
- * this file stays a thin, readable router.
+ * doGet/doPost — everything else (auth, sessions, sheet access) is
+ * factored out so this file stays a thin, readable router.
  *
  * API contract (all requests are POST with a JSON body):
  *
- *   { "action": "verify", "idToken": "..." }
+ *   { "action": "verify", "authMethod": "google"|"email", "token": "..." }
  *     -> { ok: true, data: { authorized: bool, name?, role? } }
  *
- *   { "action": "submit", "idToken": "...", sourceLanguage, targetLanguage,
- *     sourceText, targetText, explanation, category, difficulty, tags,
- *     appVersion }
+ *   { "action": "submit", "authMethod": "google"|"email", "token": "...",
+ *     sourceLanguage, targetLanguage, sourceText, targetText, explanation,
+ *     category, difficulty, tags, appVersion }
  *     -> { ok: true, data: { submissionId, timestamp } }
+ *
+ *   { "action": "requestLink", "email": "..." }
+ *     -> { ok: true, data: { sent: true } }   (always, to avoid leaking
+ *        who is on the invite list — see Sessions.gs)
+ *
+ *   { "action": "exchangeToken", "linkToken": "..." }
+ *     -> { ok: true, data: { sessionToken, email, name, role } }
  *
  *   Any error -> { ok: false, error: "human readable message" }
  */
@@ -73,13 +80,41 @@ function routeAction_(body) {
     return { ok: true, data: handleSubmit_(body) };
   }
 
+  if (body.action === 'requestLink') {
+    return { ok: true, data: handleRequestLink_(body) };
+  }
+
+  if (body.action === 'exchangeToken') {
+    return { ok: true, data: handleExchangeToken_(body) };
+  }
+
   throw new Error('Unknown action: ' + body.action);
 }
 
-function handleVerify_(body) {
-  var googleUser = verifyIdToken_(body.idToken);
-  var user = findUser_(googleUser.email);
+/**
+ * Resolves the { email, name, role } of the caller for either auth
+ * method, or returns null if their email isn't on the Users sheet.
+ * Google tokens are verified against Google directly; email-auth tokens
+ * are verified against the session store in Sessions.gs. Either way, the
+ * Users sheet lookup happens fresh on every call — nothing about a past
+ * "verify" is trusted here.
+ */
+function resolveCaller_(body) {
+  var email;
 
+  if (body.authMethod === 'google') {
+    email = verifyIdToken_(body.token).email;
+  } else if (body.authMethod === 'email') {
+    email = verifySessionToken_(body.token);
+  } else {
+    throw new Error('Missing or unrecognized auth method.');
+  }
+
+  return findUser_(email);
+}
+
+function handleVerify_(body) {
+  var user = resolveCaller_(body);
   if (!user) {
     return { authorized: false };
   }
@@ -87,9 +122,7 @@ function handleVerify_(body) {
 }
 
 function handleSubmit_(body) {
-  var googleUser = verifyIdToken_(body.idToken);
-  var user = findUser_(googleUser.email);
-
+  var user = resolveCaller_(body);
   if (!user) {
     throw new Error('Your account is not authorized to submit examples.');
   }
@@ -97,6 +130,34 @@ function handleSubmit_(body) {
   validateSubmissionPayload_(body);
 
   return appendSubmission_(user, body);
+}
+
+function handleRequestLink_(body) {
+  var email = String(body.email || '').trim().toLowerCase();
+  if (!email) {
+    throw new Error('Please enter your email address.');
+  }
+
+  var user = findUser_(email);
+  if (user) {
+    var token = createMagicLinkToken_(user.email);
+    sendMagicLinkEmail_(user.email, token);
+  }
+
+  // Same response whether or not the email was found — never confirm or
+  // deny who is on the invite list.
+  return { sent: true };
+}
+
+function handleExchangeToken_(body) {
+  var email = consumeMagicLinkToken_(body.linkToken);
+  var user = findUser_(email);
+  if (!user) {
+    throw new Error('Your account is no longer authorized.');
+  }
+
+  var sessionToken = createSessionToken_(user.email);
+  return { sessionToken: sessionToken, email: user.email, name: user.name, role: user.role };
 }
 
 function validateSubmissionPayload_(body) {

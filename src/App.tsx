@@ -4,16 +4,27 @@ import { SignInScreen } from './components/SignInScreen';
 import { AccessDeniedScreen } from './components/AccessDeniedScreen';
 import { SubmissionForm } from './components/SubmissionForm';
 import { useGoogleAuth } from './hooks/useGoogleAuth';
+import { useEmailLinkAuth } from './hooks/useEmailLinkAuth';
 import { useDarkMode } from './hooks/useDarkMode';
 import { verifyUser } from './lib/api';
 
 type AuthorizationState = 'checking' | 'authorized' | 'denied';
 
 function App() {
-  const { user, scriptReady, buttonRef, signOut } = useGoogleAuth();
+  const google = useGoogleAuth();
+  const emailAuth = useEmailLinkAuth();
   const [isDark, toggleDark] = useDarkMode();
   const [authState, setAuthState] = useState<AuthorizationState>('checking');
   const [verifyError, setVerifyError] = useState<string | null>(null);
+
+  // Whichever method produced a signed-in user wins. In practice only one
+  // will ever be set at a time in a given browser tab.
+  const user = google.user ?? emailAuth.user;
+
+  function signOut() {
+    google.signOut();
+    emailAuth.signOut();
+  }
 
   useEffect(() => {
     if (!user) {
@@ -25,7 +36,7 @@ function App() {
     setAuthState('checking');
     setVerifyError(null);
 
-    verifyUser(user.idToken).then((result) => {
+    verifyUser(user).then((result) => {
       if (cancelled) return;
       if (result.ok && result.data?.authorized) {
         setAuthState('authorized');
@@ -44,11 +55,29 @@ function App() {
     };
   }, [user]);
 
+  const exchangingMagicLink = emailAuth.status === 'exchanging';
+
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
       <Header user={user} isDark={isDark} onToggleDark={toggleDark} onSignOut={signOut} />
 
-      {!user && <SignInScreen buttonRef={buttonRef} scriptReady={scriptReady} />}
+      {!user && exchangingMagicLink && (
+        <div className="flex flex-1 items-center justify-center text-sm text-slate-400">
+          Signing you in…
+        </div>
+      )}
+
+      {!user && !exchangingMagicLink && (
+        <SignInScreen
+          buttonRef={google.buttonRef}
+          scriptReady={google.scriptReady}
+          emailStatus={emailAuth.status}
+          emailError={emailAuth.error}
+          emailSentTo={emailAuth.sentTo}
+          onRequestEmailLink={emailAuth.requestLink}
+          onResetEmail={emailAuth.reset}
+        />
+      )}
 
       {user && authState === 'checking' && (
         <div className="flex flex-1 items-center justify-center text-sm text-slate-400">
@@ -78,7 +107,7 @@ function App() {
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
-              <SubmissionForm idToken={user.idToken} />
+              <SubmissionForm user={user} />
             </div>
           </div>
         </main>
