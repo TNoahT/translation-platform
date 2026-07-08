@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode (toggled by the DarkModeToggle component)
+   instead of only following the OS preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle focus ring used across the app for keyboard accessibility. */
+.focus-ring {
+  @apply outline-none ring-2 ring-offset-2 ring-blue-500 dark:ring-offset-slate-900;
+}
