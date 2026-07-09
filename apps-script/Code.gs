@@ -171,8 +171,8 @@ function validateSubmissionPayload_(body) {
   }
 
   var difficulty = Number(body.difficulty);
-  if (!(difficulty >= 1 && difficulty <= 5)) {
-    throw new Error('Difficulty must be a number between 1 and 5.');
+  if (!(difficulty >= 1 && difficulty <= 10)) {
+    throw new Error('Difficulty must be a number between 1 and 10.');
   }
 
   if (body.tags && !Array.isArray(body.tags)) {

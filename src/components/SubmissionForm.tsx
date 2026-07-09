@@ -5,6 +5,7 @@ import { LanguageSelect } from './LanguageSelect';
 import { CategorySelect } from './CategorySelect';
 import { StarRating } from './StarRating';
 import { TagInput } from './TagInput';
+import { CheckboxField } from './CheckboxField';
 import { StatusBanner } from './StatusBanner';
 import { detectLanguage } from '../lib/detectLanguage';
 import { submitTranslation } from '../lib/api';
@@ -22,6 +23,7 @@ const EMPTY_FORM: SubmissionFormData = {
   category: '',
   difficulty: 0,
   tags: [],
+  consentPublicDataset: false,
 };
 
 type FieldErrors = Partial<Record<keyof SubmissionFormData, string>>;
@@ -176,6 +178,14 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
       </div>
 
       <TagInput id="tags" tags={form.tags} onChange={(tags) => update('tags', tags)} />
+
+      <CheckboxField
+        id="consentPublicDataset"
+        checked={form.consentPublicDataset}
+        onChange={(checked) => update('consentPublicDataset', checked)}
+        label="This example may be used in a public dataset"
+        description="If checked, this submission (including the text you entered) may be released as part of a publicly shared research dataset. Leave unchecked to keep it for internal research use only."
+      />
 
       <div className="pt-2 text-center">
         <button

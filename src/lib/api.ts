@@ -70,6 +70,7 @@ export function submitTranslation(
     category: form.category,
     difficulty: form.difficulty,
     tags: form.tags,
+    consentPublicDataset: form.consentPublicDataset,
     appVersion: APP_VERSION,
   });
 }

@@ -20,11 +20,12 @@ var SUBMISSIONS_HEADERS = [
   'Target text',
   'Difficulty explanation',
   'Category',
-  'Difficulty (1-5)',
+  'Difficulty (1-10)',
   'Tags',
   'Status',
   'Reviewer notes',
   'Application version',
+  'Public dataset consent',
 ];
 
 function getSpreadsheet_() {
@@ -92,7 +93,7 @@ function appendSubmission_(user, payload) {
   var submissionId = generateSubmissionId_();
   var timestamp = new Date().toISOString();
 
-  sheet.appendRow([
+   sheet.appendRow([
     submissionId,
     timestamp,
     user.email,
@@ -108,6 +109,7 @@ function appendSubmission_(user, payload) {
     'Pending',
     '',
     payload.appVersion || '',
+    payload.consentPublicDataset ? 'Yes' : 'No',
   ]);
 
   return { submissionId: submissionId, timestamp: timestamp };
