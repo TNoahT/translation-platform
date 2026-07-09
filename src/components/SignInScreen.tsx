@@ -5,7 +5,7 @@ import { EmailSignInForm } from './EmailSignInForm';
 interface SignInScreenProps {
   buttonRef: RefObject<HTMLDivElement | null>;
   scriptReady: boolean;
-  emailStatus: 'idle' | 'sending' | 'sent' | 'exchanging' | 'error';
+  emailStatus: 'idle' | 'sending' | 'sent' | 'ready' | 'exchanging' | 'error';
   emailError: string | null;
   emailSentTo: string | null;
   onRequestEmailLink: (email: string) => void;

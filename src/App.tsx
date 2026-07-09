@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Header } from './components/Header';
 import { SignInScreen } from './components/SignInScreen';
+import { CompleteSignInScreen } from './components/CompleteSignInScreen';
 import { AccessDeniedScreen } from './components/AccessDeniedScreen';
 import { SubmissionForm } from './components/SubmissionForm';
 import { useGoogleAuth } from './hooks/useGoogleAuth';
@@ -55,19 +56,22 @@ function App() {
     };
   }, [user]);
 
-  const exchangingMagicLink = emailAuth.status === 'exchanging';
+  //const exchangingMagicLink = emailAuth.status === 'exchanging';
 
-  return (
+ return (
     <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
       <Header user={user} isDark={isDark} onToggleDark={toggleDark} onSignOut={signOut} />
 
-      {!user && exchangingMagicLink && (
-        <div className="flex flex-1 items-center justify-center text-sm text-slate-400">
-          Signing you in…
-        </div>
+      {!user && emailAuth.linkFlowActive && (
+        <CompleteSignInScreen
+          status={emailAuth.status === 'ready' || emailAuth.status === 'exchanging' ? emailAuth.status : 'error'}
+          error={emailAuth.error}
+          onComplete={emailAuth.completeSignIn}
+          onBack={emailAuth.reset}
+        />
       )}
 
-      {!user && !exchangingMagicLink && (
+      {!user && !emailAuth.linkFlowActive && (
         <SignInScreen
           buttonRef={google.buttonRef}
           scriptReady={google.scriptReady}

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Loader2, Mail, MailCheck } from 'lucide-react';
 
 interface EmailSignInFormProps {
-  status: 'idle' | 'sending' | 'sent' | 'exchanging' | 'error';
+  status: 'idle' | 'sending' | 'sent' | 'ready' | 'exchanging' | 'error';
   error: string | null;
   sentTo: string | null;
   onRequestLink: (email: string) => void;

@@ -5,7 +5,7 @@ import type { AuthUser } from '../types';
 const STORAGE_KEY = 'dtc.emailSession';
 const URL_TOKEN_PARAM = 'authToken';
 
-type Status = 'idle' | 'sending' | 'sent' | 'exchanging' | 'error';
+type Status = 'idle' | 'sending' | 'sent' | 'ready' | 'exchanging' | 'error';
 
 interface StoredSession {
   email: string;
@@ -44,7 +44,18 @@ export interface UseEmailLinkAuth {
   error: string | null;
   /** Set while `status` is "sent", so the UI can say "check your inbox at …". */
   sentTo: string | null;
+  /** True once a magic-link token has been detected in the URL for this
+   * visit — lets the caller show the "Finish signing in" screen (rather
+   * than the normal sign-in form) for "ready"/"exchanging"/"error". */
+  linkFlowActive: boolean;
   requestLink: (email: string) => Promise<void>;
+  /** Call this in response to a real user click (status "ready") to
+   * actually exchange the one-time link token for a session. Deferring
+   * this until an explicit click — rather than firing automatically on
+   * page load — avoids email security scanners (Microsoft Safe Links,
+   * Proofpoint, Mimecast, etc.) silently burning the one-time token by
+   * pre-fetching/rendering the link before the real user clicks it. */
+  completeSignIn: () => Promise<void>;
   reset: () => void;
   signOut: () => void;
 }
@@ -53,45 +64,27 @@ export interface UseEmailLinkAuth {
  * Handles both halves of the magic-link flow:
  *  1. requestLink(email) — asks the backend to email a one-time link.
  *  2. On mount, checks the URL for ?authToken=... (the link the user
- *     just clicked) and exchanges it for a longer-lived session token,
- *     which is then persisted in sessionStorage like the Google flow.
+ *     just clicked) and moves to a "ready" state — it does NOT exchange
+ *     the token automatically. The UI should show a "Finish signing in"
+ *     button that calls completeSignIn() on click.
  */
 export function useEmailLinkAuth(): UseEmailLinkAuth {
   const [user, setUser] = useState<AuthUser | null>(readStoredSession);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const [linkFlowActive, setLinkFlowActive] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const linkToken = params.get(URL_TOKEN_PARAM);
     if (!linkToken) return;
 
-    let cancelled = false;
-    setStatus('exchanging');
     stripTokenFromUrl();
-
-    exchangeMagicLinkToken(linkToken).then((result) => {
-      if (cancelled) return;
-      if (result.ok && result.data) {
-        const newUser: AuthUser = {
-          email: result.data.email,
-          name: result.data.name,
-          method: 'email',
-          token: result.data.sessionToken,
-        };
-        storeSession(newUser);
-        setUser(newUser);
-        setStatus('idle');
-      } else {
-        setError(result.error ?? 'That sign-in link is invalid or has expired.');
-        setStatus('error');
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
+    setPendingToken(linkToken);
+    setLinkFlowActive(true);
+    setStatus('ready');
   }, []);
 
   const requestLink = useCallback(async (email: string) => {
@@ -107,10 +100,37 @@ export function useEmailLinkAuth(): UseEmailLinkAuth {
     }
   }, []);
 
+  const completeSignIn = useCallback(async () => {
+    if (!pendingToken) return;
+
+    setStatus('exchanging');
+    setError(null);
+
+    const result = await exchangeMagicLinkToken(pendingToken);
+    setPendingToken(null);
+
+    if (result.ok && result.data) {
+      const newUser: AuthUser = {
+        email: result.data.email,
+        name: result.data.name,
+        method: 'email',
+        token: result.data.sessionToken,
+      };
+      storeSession(newUser);
+      setUser(newUser);
+      setStatus('idle');
+    } else {
+      setError(result.error ?? 'That sign-in link is invalid or has expired.');
+      setStatus('error');
+    }
+  }, [pendingToken]);
+
   const reset = useCallback(() => {
     setStatus('idle');
     setError(null);
     setSentTo(null);
+    setPendingToken(null);
+    setLinkFlowActive(false);
   }, []);
 
   const signOut = useCallback(() => {
@@ -119,5 +139,15 @@ export function useEmailLinkAuth(): UseEmailLinkAuth {
     reset();
   }, [reset]);
 
-  return { user, status, error, sentTo, requestLink, reset, signOut };
+  return {
+    user,
+    status,
+    error,
+    sentTo,
+    linkFlowActive,
+    requestLink,
+    completeSignIn,
+    reset,
+    signOut,
+  };
 }
