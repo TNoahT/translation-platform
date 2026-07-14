@@ -1,5 +1,7 @@
 import { CATEGORY_OPTIONS, type Category } from '../types';
 import { FieldLabel } from './FieldLabel';
+import { CATEGORY_LABELS } from '../lib/i18n/strings';
+import { useLocale } from '../lib/i18n/LocaleContext';
 
 interface CategorySelectProps {
   id: string;
@@ -9,10 +11,12 @@ interface CategorySelectProps {
 }
 
 export function CategorySelect({ id, value, onChange, error }: CategorySelectProps) {
+  const { locale, t } = useLocale();
+
   return (
     <div>
       <FieldLabel htmlFor={id} required>
-        Category
+        {t('categoryLabel')}
       </FieldLabel>
       <select
         id={id}
@@ -24,11 +28,14 @@ export function CategorySelect({ id, value, onChange, error }: CategorySelectPro
         }`}
       >
         <option value="" disabled>
-          Select a category…
+          {t('selectCategoryPlaceholder')}
         </option>
         {CATEGORY_OPTIONS.map((c) => (
+          // The stored `value` stays the fixed English category name —
+          // only the displayed label changes with locale — so existing
+          // data and analysis scripts never see a different value.
           <option key={c} value={c}>
-            {c}
+            {CATEGORY_LABELS[c][locale]}
           </option>
         ))}
       </select>

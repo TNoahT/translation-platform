@@ -4,9 +4,11 @@ import { SignInScreen } from './components/SignInScreen';
 import { CompleteSignInScreen } from './components/CompleteSignInScreen';
 import { AccessDeniedScreen } from './components/AccessDeniedScreen';
 import { SubmissionForm } from './components/SubmissionForm';
+import { ProjectIntro } from './components/ProjectIntro';
 import { useGoogleAuth } from './hooks/useGoogleAuth';
 import { useEmailLinkAuth } from './hooks/useEmailLinkAuth';
 import { useDarkMode } from './hooks/useDarkMode';
+import { useLocale } from './lib/i18n/LocaleContext';
 import { verifyUser } from './lib/api';
 
 type AuthorizationState = 'checking' | 'authorized' | 'denied';
@@ -15,6 +17,7 @@ function App() {
   const google = useGoogleAuth();
   const emailAuth = useEmailLinkAuth();
   const [isDark, toggleDark] = useDarkMode();
+  const { t } = useLocale();
   const [authState, setAuthState] = useState<AuthorizationState>('checking');
   const [verifyError, setVerifyError] = useState<string | null>(null);
 
@@ -56,9 +59,7 @@ function App() {
     };
   }, [user]);
 
-  //const exchangingMagicLink = emailAuth.status === 'exchanging';
-
- return (
+  return (
     <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
       <Header user={user} isDark={isDark} onToggleDark={toggleDark} onSignOut={signOut} />
 
@@ -85,7 +86,7 @@ function App() {
 
       {user && authState === 'checking' && (
         <div className="flex flex-1 items-center justify-center text-sm text-slate-400">
-          Checking access…
+          {t('checkingAccess')}
         </div>
       )}
 
@@ -106,9 +107,11 @@ function App() {
                 Difficult Translation Collection
               </h1>
               <p className="mx-auto mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
-                Help us build a high-quality dataset of challenging translation examples.
+                {t('projectSubtitleMain')}
               </p>
             </div>
+
+            <ProjectIntro />
 
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
               <SubmissionForm user={user} />

@@ -1,4 +1,5 @@
 import { Loader2, MailCheck } from 'lucide-react';
+import { useLocale } from '../lib/i18n/LocaleContext';
 
 interface CompleteSignInScreenProps {
   status: 'ready' | 'exchanging' | 'error';
@@ -16,6 +17,8 @@ interface CompleteSignInScreenProps {
  * the one-time token before the real person arrives.
  */
 export function CompleteSignInScreen({ status, error, onComplete, onBack }: CompleteSignInScreenProps) {
+  const { t } = useLocale();
+
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-16">
       <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -23,11 +26,9 @@ export function CompleteSignInScreen({ status, error, onComplete, onBack }: Comp
           <MailCheck className="text-blue-600 dark:text-blue-400" size={24} aria-hidden="true" />
         </div>
         <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
-          Finish signing in
+          {t('finishSignInTitle')}
         </h1>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          Click below to complete your sign-in.
-        </p>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{t('finishSignInBody')}</p>
 
         <button
           type="button"
@@ -38,10 +39,10 @@ export function CompleteSignInScreen({ status, error, onComplete, onBack }: Comp
           {status === 'exchanging' ? (
             <>
               <Loader2 size={16} className="animate-spin" aria-hidden="true" />
-              Signing you in…
+              {t('signingInButton')}
             </>
           ) : (
-            'Continue'
+            t('continueButton')
           )}
         </button>
 
@@ -53,7 +54,7 @@ export function CompleteSignInScreen({ status, error, onComplete, onBack }: Comp
               onClick={onBack}
               className="mt-2 text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
             >
-              Back to sign in
+              {t('backToSignIn')}
             </button>
           </div>
         )}

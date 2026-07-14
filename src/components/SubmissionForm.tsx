@@ -10,6 +10,7 @@ import { StatusBanner } from './StatusBanner';
 import { detectLanguage } from '../lib/detectLanguage';
 import { submitTranslation } from '../lib/api';
 import { loadDraft, clearDraft, useAutosaveDraft } from '../hooks/useAutosaveDraft';
+import { useLocale } from '../lib/i18n/LocaleContext';
 import type { AuthUser, Category, SubmissionFormData } from '../types';
 
 const EMPTY_FORM: SubmissionFormData = {
@@ -33,6 +34,7 @@ interface SubmissionFormProps {
 }
 
 export function SubmissionForm({ user }: SubmissionFormProps) {
+  const { t } = useLocale();
   const [form, setForm] = useState<SubmissionFormData>(() => ({
     ...EMPTY_FORM,
     ...loadDraft(),
@@ -62,13 +64,13 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
 
   function validate(): boolean {
     const next: FieldErrors = {};
-    if (!form.sourceText.trim()) next.sourceText = 'Source text is required.';
-    if (!form.targetText.trim()) next.targetText = 'Target text is required.';
-    if (!form.explanation.trim()) next.explanation = 'Please explain why this is difficult.';
-    if (!form.category) next.category = 'Please choose a category.';
-    if (!form.difficulty) next.difficulty = 'Please rate the difficulty.';
-    if (!form.sourceLanguage) next.sourceLanguage = 'Please select the source language.';
-    if (!form.targetLanguage) next.targetLanguage = 'Please select the target language.';
+    if (!form.sourceText.trim()) next.sourceText = t('validationSourceText');
+    if (!form.targetText.trim()) next.targetText = t('validationTargetText');
+    if (!form.explanation.trim()) next.explanation = t('validationExplanation');
+    if (!form.category) next.category = t('validationCategory');
+    if (!form.difficulty) next.difficulty = t('validationDifficulty');
+    if (!form.sourceLanguage) next.sourceLanguage = t('validationSourceLanguage');
+    if (!form.targetLanguage) next.targetLanguage = t('validationTargetLanguage');
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -77,7 +79,7 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
     e.preventDefault();
     setBanner(null);
     if (!validate()) {
-      setBanner({ kind: 'error', message: 'Please fix the highlighted fields before submitting.' });
+      setBanner({ kind: 'error', message: t('formHasErrors') });
       return;
     }
 
@@ -86,16 +88,13 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
     setSubmitting(false);
 
     if (result.ok) {
-      setBanner({
-        kind: 'success',
-        message: 'Thank you! Your translation example has been submitted.',
-      });
+      setBanner({ kind: 'success', message: t('submitSuccess') });
       clearDraft();
       setForm(EMPTY_FORM);
     } else {
       setBanner({
         kind: 'error',
-        message: result.error ?? 'Something went wrong while submitting. Please try again.',
+        message: result.error ?? t('submitGenericError'),
       });
     }
   }
@@ -106,8 +105,8 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
 
       <TextAreaField
         id="sourceText"
-        label="Source text"
-        tooltip="Paste the original text, in its source language."
+        label={t('sourceTextLabel')}
+        tooltip={t('sourceTextTooltip')}
         required
         maxLength={2000}
         value={form.sourceText}
@@ -117,7 +116,7 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
 
       <LanguageSelect
         id="sourceLanguage"
-        label="Source language"
+        label={t('sourceLanguageLabel')}
         value={form.sourceLanguage}
         isAuto={!form.sourceLanguageManual}
         detecting={detectingSource}
@@ -129,8 +128,8 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
 
       <TextAreaField
         id="targetText"
-        label="Target text"
-        tooltip="Paste the (imperfect or difficult) translation."
+        label={t('targetTextLabel')}
+        tooltip={t('targetTextTooltip')}
         required
         maxLength={2000}
         value={form.targetText}
@@ -140,7 +139,7 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
 
       <LanguageSelect
         id="targetLanguage"
-        label="Target language"
+        label={t('targetLanguageLabel')}
         value={form.targetLanguage}
         isAuto={!form.targetLanguageManual}
         detecting={detectingTarget}
@@ -152,9 +151,9 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
 
       <TextAreaField
         id="explanation"
-        label="Why is this translation difficult?"
-        tooltip="e.g. terminology, ambiguity, idiomatic expression, cultural reference, wordplay, domain-specific vocabulary…"
-        placeholder="e.g. terminology, ambiguity, idiomatic expression, cultural reference, wordplay, domain-specific vocabulary…"
+        label={t('explanationLabel')}
+        tooltip={t('explanationPlaceholder')}
+        placeholder={t('explanationPlaceholder')}
         required
         maxLength={1000}
         value={form.explanation}
@@ -183,8 +182,8 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
         id="consentPublicDataset"
         checked={form.consentPublicDataset}
         onChange={(checked) => update('consentPublicDataset', checked)}
-        label="This example may be used in a public dataset"
-        description="If checked, this submission (including the text you entered) may be released as part of a publicly shared research dataset. Leave unchecked to keep it for internal research use only."
+        label={t('consentLabel')}
+        description={t('consentDescription')}
       />
 
       <div className="pt-2 text-center">
@@ -196,12 +195,12 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
           {submitting ? (
             <>
               <Loader2 size={18} className="animate-spin" aria-hidden="true" />
-              Submitting…
+              {t('submittingButton')}
             </>
           ) : (
             <>
               <Send size={18} aria-hidden="true" />
-              Submit example
+              {t('submitButton')}
             </>
           )}
         </button>

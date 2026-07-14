@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Loader2, Mail, MailCheck } from 'lucide-react';
+import { useLocale } from '../lib/i18n/LocaleContext';
 
 interface EmailSignInFormProps {
   status: 'idle' | 'sending' | 'sent' | 'ready' | 'exchanging' | 'error';
@@ -17,6 +18,7 @@ interface EmailSignInFormProps {
  * leaking who is invited.
  */
 export function EmailSignInForm({ status, error, sentTo, onRequestLink, onReset }: EmailSignInFormProps) {
+  const { t } = useLocale();
   const [email, setEmail] = useState('');
 
   function handleSubmit(e: FormEvent) {
@@ -29,18 +31,17 @@ export function EmailSignInForm({ status, error, sentTo, onRequestLink, onReset 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-700 dark:bg-slate-800/50">
         <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-200">
           <MailCheck size={16} className="text-emerald-500" aria-hidden="true" />
-          Check your inbox
+          {t('checkInboxTitle')}
         </div>
         <p className="mt-1 text-slate-500 dark:text-slate-400">
-          If <span className="font-medium">{sentTo}</span> is on the invite list, a sign-in link
-          just landed there. It expires in 15 minutes.
+          {t('checkInboxBody', { email: sentTo ?? '' })}
         </p>
         <button
           type="button"
           onClick={onReset}
           className="mt-2 text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
         >
-          Use a different email
+          {t('useDifferentEmail')}
         </button>
       </div>
     );
@@ -49,7 +50,7 @@ export function EmailSignInForm({ status, error, sentTo, onRequestLink, onReset 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
       <label htmlFor="magic-link-email" className="sr-only">
-        Email address
+        {t('emailAddressLabel')}
       </label>
       <div className="flex gap-2">
         <input
@@ -58,7 +59,7 @@ export function EmailSignInForm({ status, error, sentTo, onRequestLink, onReset 
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@university.edu"
+          placeholder={t('emailPlaceholder')}
           className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm focus-ring dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
         />
         <button
@@ -71,7 +72,7 @@ export function EmailSignInForm({ status, error, sentTo, onRequestLink, onReset 
           ) : (
             <Mail size={15} aria-hidden="true" />
           )}
-          Send link
+          {t('sendLinkButton')}
         </button>
       </div>
       {status === 'error' && error && <p className="text-xs text-red-500">{error}</p>}

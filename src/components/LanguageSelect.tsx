@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, Search, Sparkles } from 'lucide-react';
 import { LANGUAGE_OPTIONS, languageName } from '../lib/languages';
 import { FieldLabel } from './FieldLabel';
+import { useLocale } from '../lib/i18n/LocaleContext';
 
 interface LanguageSelectProps {
   id: string;
@@ -29,6 +30,7 @@ export function LanguageSelect({
   detecting,
   error,
 }: LanguageSelectProps) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,21 +70,21 @@ export function LanguageSelect({
         } dark:bg-slate-900 dark:text-slate-100`}
       >
         <span className={selectedName ? '' : 'text-slate-400'}>
-          {selectedName ?? 'Select a language…'}
+          {selectedName ?? t('selectLanguagePlaceholder')}
         </span>
         <ChevronDown size={16} className="text-slate-400" aria-hidden="true" />
       </button>
 
       <div className="mt-1 flex min-h-[1.1rem] items-center gap-1 text-xs">
-        {detecting && <span className="text-slate-400">Detecting language…</span>}
+        {detecting && <span className="text-slate-400">{t('detectingLanguage')}</span>}
         {!detecting && isAuto && selectedName && (
           <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
             <Sparkles size={12} aria-hidden="true" />
-            Detected language: {selectedName}
+            {t('detectedLanguagePrefix', { name: selectedName })}
           </span>
         )}
         {!detecting && !selectedName && (
-          <span className="text-slate-400">Language could not be determined.</span>
+          <span className="text-slate-400">{t('languageUndetermined')}</span>
         )}
       </div>
 
@@ -96,13 +98,13 @@ export function LanguageSelect({
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search languages…"
+              placeholder={t('searchLanguagesPlaceholder')}
               className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400 dark:text-slate-100"
             />
           </div>
           <ul role="listbox" className="max-h-56 overflow-y-auto py-1">
             {filtered.length === 0 && (
-              <li className="px-4 py-2 text-sm text-slate-400">No matches</li>
+              <li className="px-4 py-2 text-sm text-slate-400">{t('noMatches')}</li>
             )}
             {filtered.map((lang) => (
               <li key={lang.code}>

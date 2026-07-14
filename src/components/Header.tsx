@@ -1,5 +1,6 @@
-import { LogOut, Moon, Sun } from 'lucide-react';
+import { Globe, LogOut, Moon, Sun } from 'lucide-react';
 import type { AuthUser } from '../types';
+import { useLocale } from '../lib/i18n/LocaleContext';
 
 interface HeaderProps {
   user: AuthUser | null;
@@ -9,6 +10,9 @@ interface HeaderProps {
 }
 
 export function Header({ user, isDark, onToggleDark, onSignOut }: HeaderProps) {
+  const { locale, setLocale, t } = useLocale();
+  const otherLocale = locale === 'en' ? 'fr' : 'en';
+
   return (
     <header className="flex items-center justify-between px-4 py-4 sm:px-8">
       <span className="text-sm font-semibold tracking-tight text-slate-600 dark:text-slate-300">
@@ -17,8 +21,17 @@ export function Header({ user, isDark, onToggleDark, onSignOut }: HeaderProps) {
       <div className="flex items-center gap-3">
         <button
           type="button"
+          onClick={() => setLocale(otherLocale)}
+          aria-label={locale === 'en' ? t('switchToFrench') : t('switchToEnglish')}
+          className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 hover:bg-slate-100 focus-ring dark:text-slate-400 dark:hover:bg-slate-800"
+        >
+          <Globe size={15} aria-hidden="true" />
+          {otherLocale}
+        </button>
+        <button
+          type="button"
           onClick={onToggleDark}
-          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={isDark ? t('switchToLightMode') : t('switchToDarkMode')}
           className="rounded-full p-2 text-slate-500 hover:bg-slate-100 focus-ring dark:text-slate-400 dark:hover:bg-slate-800"
         >
           {isDark ? <Sun size={18} /> : <Moon size={18} />}
@@ -41,7 +54,7 @@ export function Header({ user, isDark, onToggleDark, onSignOut }: HeaderProps) {
             <button
               type="button"
               onClick={onSignOut}
-              aria-label="Sign out"
+              aria-label={t('signOutAria')}
               className="rounded-full p-2 text-slate-500 hover:bg-slate-100 focus-ring dark:text-slate-400 dark:hover:bg-slate-800"
             >
               <LogOut size={17} />
