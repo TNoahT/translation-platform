@@ -62,7 +62,7 @@ export function TagInput({ id, tags, onChange }: TagInputProps) {
           onKeyDown={handleKeyDown}
           onBlur={addTag}
           placeholder={tags.length === 0 ? t('tagsPlaceholder') : ''}
-          className="min-w-[8rem] flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 dark:text-slate-100"
+          className="min-w-[8rem] flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100"
         />
       </div>
     </div>

@@ -26,6 +26,10 @@ var SUBMISSIONS_HEADERS = [
   'Reviewer notes',
   'Application version',
   'Public dataset consent',
+  'Additional information',
+  'Submitted anonymously',
+  'Public credit requested',
+  'Public credit name',
 ];
 
 function getSpreadsheet_() {
@@ -110,6 +114,10 @@ function appendSubmission_(user, payload) {
     '',
     payload.appVersion || '',
     payload.consentPublicDataset ? 'Yes' : 'No',
+    payload.additionalInfo || '',
+    payload.anonymous ? 'Yes' : 'No',
+    payload.creditAsContributor ? 'Yes' : 'No',
+    payload.creditAsContributor ? payload.creditName || '' : '',
   ]);
 
   return { submissionId: submissionId, timestamp: timestamp };

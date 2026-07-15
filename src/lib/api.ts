@@ -66,11 +66,15 @@ export function submitTranslation(
     targetLanguage: form.targetLanguage,
     sourceText: form.sourceText,
     targetText: form.targetText,
+    additionalInfo: form.additionalInfo,
     explanation: form.explanation,
     category: form.category,
     difficulty: form.difficulty,
     tags: form.tags,
     consentPublicDataset: form.consentPublicDataset,
+    creditAsContributor: form.creditAsContributor,
+    creditName: form.creditName,
+    anonymous: form.anonymous,
     appVersion: APP_VERSION,
   });
 }

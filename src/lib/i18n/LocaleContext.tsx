@@ -1,13 +1,5 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
-import { STRINGS, type Locale, type StringKey } from './strings';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { TRANSLATIONS, type Locale } from './strings';
 
 const STORAGE_KEY = 'dtc.locale';
 
@@ -20,40 +12,41 @@ function detectInitialLocale(): Locale {
 interface LocaleContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  /** Translates a key from strings.ts, optionally interpolating
-   * `{placeholder}` tokens with the given values, e.g.
-   * `t('checkInboxBody', { email: user.email })`. */
-  t: (key: StringKey, vars?: Record<string, string>) => string;
+  /** Looks up `key` in the current locale's dictionary (see strings.ts)
+   * and substitutes any `{placeholder}` tokens with `params`, e.g.
+   * `t('accessDeniedBody', { email })`. */
+  t: (key: string, params?: Record<string, string>) => string;
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(detectInitialLocale);
+  const [locale, setLocale] = useState<Locale>(detectInitialLocale);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, locale);
     document.documentElement.lang = locale;
   }, [locale]);
 
-  const setLocale = useCallback((next: Locale) => setLocaleState(next), []);
+  function t(key: string, params?: Record<string, string>): string {
+    const template = TRANSLATIONS[locale][key];
+    if (!template) {
+      // Missing translation — fail loudly in dev rather than silently
+      // rendering nothing, but never crash the app in production.
+      // eslint-disable-next-line no-console
+      console.warn(`Missing translation for key "${key}" (locale: ${locale})`);
+      return key;
+    }
+    if (!params) return template;
+    return Object.keys(params).reduce(
+      (result, paramKey) => result.replaceAll(`{${paramKey}}`, params[paramKey]),
+      template,
+    );
+  }
 
-  const t = useCallback(
-    (key: StringKey, vars?: Record<string, string>) => {
-      let text = STRINGS[key][locale];
-      if (vars) {
-        for (const [name, value] of Object.entries(vars)) {
-          text = text.replace(`{${name}}`, value);
-        }
-      }
-      return text;
-    },
-    [locale],
+  return (
+    <LocaleContext.Provider value={{ locale, setLocale, t }}>{children}</LocaleContext.Provider>
   );
-
-  const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
-
-  return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
 
 export function useLocale(): LocaleContextValue {

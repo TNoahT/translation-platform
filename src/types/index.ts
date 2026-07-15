@@ -54,19 +54,20 @@ export type SubmissionStatus = 'Pending' | 'Approved' | 'Rejected';
 /** Shape of the form as edited in the browser. */
 export interface SubmissionFormData {
   sourceText: string;
-  sourceLanguage: string;
-  sourceLanguageManual: boolean;
+  sourceLanguage: string; // language code
+  sourceLanguageManual: boolean; // true once the user overrides auto-detect
   targetText: string;
-  targetLanguage: string;
+  targetLanguage: string; // language code
   targetLanguageManual: boolean;
+  additionalInfo: string;
   explanation: string;
   category: Category | '';
-  difficulty: number;
+  difficulty: number; // 1-10, 0 means "not yet chosen"
   tags: string[];
-  /** Whether the contributor consents to this example being included in
-   * a public dataset release. Defaults to false — consent must be
-   * explicitly opted into, never assumed. */
   consentPublicDataset: boolean;
+  creditAsContributor: boolean;
+  creditName: string;
+  anonymous: boolean;
 }
 
 /** Payload sent to the Google Apps Script backend. */
@@ -78,11 +79,15 @@ export interface SubmissionPayload {
   targetLanguage: string;
   sourceText: string;
   targetText: string;
+  additionalInfo: string;
   explanation: string;
   category: string;
   difficulty: number;
   tags: string[];
   consentPublicDataset: boolean;
+  creditAsContributor: boolean;
+  creditName: string;
+  anonymous: boolean;
   appVersion: string;
 }
 

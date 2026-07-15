@@ -11,8 +11,10 @@
  *     -> { ok: true, data: { authorized: bool, name?, role? } }
  *
  *   { "action": "submit", "authMethod": "google"|"email", "token": "...",
- *     sourceLanguage, targetLanguage, sourceText, targetText, explanation,
- *     category, difficulty, tags, appVersion }
+ *     sourceLanguage, targetLanguage, sourceText, targetText,
+ *     additionalInfo, explanation, category, difficulty, tags,
+ *     consentPublicDataset, creditAsContributor, creditName, anonymous,
+ *     appVersion }
  *     -> { ok: true, data: { submissionId, timestamp } }
  *
  *   { "action": "requestLink", "email": "..." }
@@ -129,7 +131,14 @@ function handleSubmit_(body) {
 
   validateSubmissionPayload_(body);
 
-  return appendSubmission_(user, body);
+  // The Users-sheet check above always requires the caller's real,
+  // authenticated identity — anonymity only affects what gets WRITTEN to
+  // the Submissions sheet, never whether the request is authorized.
+  var identity = body.anonymous
+    ? { email: '', name: getOrCreateNickname_(body.token) }
+    : { email: user.email, name: user.name };
+
+  return appendSubmission_(identity, body);
 }
 
 function handleRequestLink_(body) {
@@ -177,6 +186,13 @@ function validateSubmissionPayload_(body) {
 
   if (body.tags && !Array.isArray(body.tags)) {
     throw new Error('Tags must be an array of strings.');
+  }
+
+  if (body.consentPublicDataset && body.creditAsContributor) {
+    var creditName = String(body.creditName || '').trim();
+    if (!creditName) {
+      throw new Error('A display name is required when requesting public credit.');
+    }
   }
 }
 

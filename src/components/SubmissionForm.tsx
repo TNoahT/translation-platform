@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Loader2, Send } from 'lucide-react';
 import { TextAreaField } from './TextAreaField';
+import { TextField } from './TextField';
 import { LanguageSelect } from './LanguageSelect';
 import { CategorySelect } from './CategorySelect';
 import { StarRating } from './StarRating';
 import { TagInput } from './TagInput';
 import { CheckboxField } from './CheckboxField';
+import { SubmissionGuidelines } from './SubmissionGuidelines';
 import { StatusBanner } from './StatusBanner';
 import { detectLanguage } from '../lib/detectLanguage';
 import { submitTranslation } from '../lib/api';
@@ -20,11 +22,15 @@ const EMPTY_FORM: SubmissionFormData = {
   targetText: '',
   targetLanguage: '',
   targetLanguageManual: false,
+  additionalInfo: '',
   explanation: '',
   category: '',
   difficulty: 0,
   tags: [],
   consentPublicDataset: false,
+  creditAsContributor: false,
+  creditName: '',
+  anonymous: false,
 };
 
 type FieldErrors = Partial<Record<keyof SubmissionFormData, string>>;
@@ -71,6 +77,11 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
     if (!form.difficulty) next.difficulty = t('validationDifficulty');
     if (!form.sourceLanguage) next.sourceLanguage = t('validationSourceLanguage');
     if (!form.targetLanguage) next.targetLanguage = t('validationTargetLanguage');
+    if (!form.sourceLanguage) next.sourceLanguage = t('validationSourceLanguage');
+    if (!form.targetLanguage) next.targetLanguage = t('validationTargetLanguage');
+    if (form.consentPublicDataset && form.creditAsContributor && !form.creditName.trim()) {
+      next.creditName = t('validationCreditName');
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -101,6 +112,8 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-6">
+      <SubmissionGuidelines />
+
       {banner && <StatusBanner kind={banner.kind} message={banner.message} />}
 
       <TextAreaField
@@ -150,6 +163,16 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
       />
 
       <TextAreaField
+        id="additionalInfo"
+        label={t('additionalInfoLabel')}
+        tooltip={t('additionalInfoTooltip')}
+        placeholder={t('additionalInfoPlaceholder')}
+        maxLength={1000}
+        value={form.additionalInfo}
+        onChange={(e) => update('additionalInfo', e.target.value)}
+      />
+
+      <TextAreaField
         id="explanation"
         label={t('explanationLabel')}
         tooltip={t('explanationPlaceholder')}
@@ -179,12 +202,54 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
       <TagInput id="tags" tags={form.tags} onChange={(tags) => update('tags', tags)} />
 
       <CheckboxField
+        id="anonymous"
+        checked={form.anonymous}
+        onChange={(checked) => update('anonymous', checked)}
+        label={t('anonymousLabel')}
+        description={t('anonymousDescription')}
+      />
+
+      <CheckboxField
         id="consentPublicDataset"
         checked={form.consentPublicDataset}
-        onChange={(checked) => update('consentPublicDataset', checked)}
+        onChange={(checked) => {
+          update('consentPublicDataset', checked);
+          if (!checked) {
+            // Crediting only makes sense alongside public-dataset
+            // consent — clear it out if consent is withdrawn so no
+            // stale, hidden state lingers (including in the autosaved
+            // draft).
+            update('creditAsContributor', false);
+            update('creditName', '');
+          }
+        }}
         label={t('consentLabel')}
         description={t('consentDescription')}
       />
+
+      {form.consentPublicDataset && (
+        <div className="-mt-3 space-y-4 border-l-2 border-slate-200 pl-4 dark:border-slate-700">
+          <CheckboxField
+            id="creditAsContributor"
+            checked={form.creditAsContributor}
+            onChange={(checked) => update('creditAsContributor', checked)}
+            label={t('creditLabel')}
+            description={t('creditDescription')}
+          />
+          {form.creditAsContributor && (
+            <TextField
+              id="creditName"
+              label={t('creditNameLabel')}
+              placeholder={t('creditNamePlaceholder')}
+              required
+              maxLength={100}
+              value={form.creditName}
+              error={errors.creditName}
+              onChange={(e) => update('creditName', e.target.value)}
+            />
+          )}
+        </div>
+      )}
 
       <div className="pt-2 text-center">
         <button

@@ -31,4 +31,4 @@ export const GOOGLE_CLIENT_ID = requireEnv(
 
 /** Sent with every submission so the spreadsheet records which build of
  * the app produced each row. Bump this when the form schema changes. */
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '0.0.4';

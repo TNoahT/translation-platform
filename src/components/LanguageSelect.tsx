@@ -65,7 +65,7 @@ export function LanguageSelect({
         aria-expanded={open}
         aria-invalid={Boolean(error)}
         onClick={() => setOpen((v) => !v)}
-        className={`flex w-full items-center justify-between rounded-xl border bg-white px-4 py-2.5 text-left text-sm shadow-sm transition-colors focus-ring ${
+        className={`flex w-full items-center justify-between rounded-xl border bg-white px-4 py-2.5 text-left text-sm text-slate-800 shadow-sm transition-colors focus-ring ${
           error ? 'border-red-300 dark:border-red-700' : 'border-slate-200 dark:border-slate-700'
         } dark:bg-slate-900 dark:text-slate-100`}
       >
@@ -99,7 +99,7 @@ export function LanguageSelect({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('searchLanguagesPlaceholder')}
-              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400 dark:text-slate-100"
+              className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100"
             />
           </div>
           <ul role="listbox" className="max-h-56 overflow-y-auto py-1">

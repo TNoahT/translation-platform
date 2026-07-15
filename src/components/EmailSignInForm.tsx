@@ -60,7 +60,7 @@ export function EmailSignInForm({ status, error, sentTo, onRequestLink, onReset 
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t('emailPlaceholder')}
-          className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm focus-ring dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+          className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-800 shadow-sm focus-ring dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
         />
         <button
           type="submit"

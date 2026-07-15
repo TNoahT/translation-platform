@@ -25,7 +25,7 @@ export function StarRating({ id, value, onChange, error }: StarRatingProps) {
       <FieldLabel htmlFor={id} required>
         {t('difficultyLabel')}
       </FieldLabel>
-      <div id={id} role="radiogroup" aria-label={t('difficultyLabel')} className="flex flex-wrap items-center gap-0.5">
+      <div id={id} role="radiogroup" aria-label={t('difficultyLabel')} className="flex flex-wrap items-center gap-2">
         {SCALE.map((n) => (
           <button
             key={n}

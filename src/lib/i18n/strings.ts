@@ -1,158 +1,258 @@
-import { CATEGORY_OPTIONS, type Category } from '../../types';
+import type { Category } from '../../types';
 
 export type Locale = 'en' | 'fr';
 
 export const LOCALES: Locale[] = ['en', 'fr'];
 
 /**
- * All UI chrome text lives here, keyed by a short identifier with an
- * { en, fr } pair. Adding a third language later means adding a third
- * key to each entry (and to `Locale`/`LOCALES` above) — nothing else in
- * the app needs to change.
+ * Flat dictionary of every piece of translatable UI text, keyed by a
+ * short id. `t(key, params?)` (see LocaleContext.tsx) looks values up
+ * here and substitutes `{placeholder}` tokens with `params`.
  *
- * Category names and difficulty labels are translated separately below,
- * since they map from fixed English data values (stored as-is in the
- * spreadsheet) to a locale-specific display label.
+ * Keep keys identical across `en` and `fr` — TypeScript's `Record<Locale,
+ * ...>` below will catch a missing translation at compile time.
  */
-export const STRINGS = {
-  projectSubtitleMain: {
-    en: 'Help us build a high-quality dataset of challenging translation examples.',
-    fr: "Aidez-nous à construire un ensemble de données de haute qualité d'exemples de traductions difficiles.",
-  },
-  signInSubtitle: {
-    en: 'This is an invitation-only research tool. Sign in with the account you were invited with to submit examples.',
-    fr: "Cet outil de recherche est réservé aux personnes invitées. Connectez-vous avec le compte avec lequel vous avez été invité(e) pour soumettre des exemples.",
-  },
-  loadingSignIn: { en: 'Loading sign-in…', fr: 'Chargement de la connexion…' },
-  orDivider: { en: 'or', fr: 'ou' },
-  noGoogleAccount: {
-    en: "No Google account? Sign in with just your email instead.",
-    fr: 'Pas de compte Google\u00a0? Connectez-vous simplement avec votre e-mail.',
-  },
-  checkingAccess: { en: 'Checking access…', fr: 'Vérification de l\u2019accès…' },
+type Dictionary = Record<string, string>;
 
-  emailAddressLabel: { en: 'Email address', fr: 'Adresse e-mail' },
-  emailPlaceholder: { en: 'you@university.edu', fr: 'vous@universite.fr' },
-  sendLinkButton: { en: 'Send link', fr: 'Envoyer le lien' },
-  checkInboxTitle: { en: 'Check your inbox', fr: 'Consultez votre boîte de réception' },
-  checkInboxBody: {
-    en: 'If {email} is on the invite list, a sign-in link just landed there. It expires in 15 minutes.',
-    fr: 'Si {email} figure sur la liste des invités, un lien de connexion vient d\u2019y être envoyé. Il expire dans 15 minutes.',
-  },
-  useDifferentEmail: { en: 'Use a different email', fr: 'Utiliser une autre adresse e-mail' },
+export const TRANSLATIONS: Record<Locale, Dictionary> = {
+  en: {
+    // Header
+    switchToFrench: 'Switch to French',
+    switchToEnglish: 'Switch to English',
+    switchToLightMode: 'Switch to light mode',
+    switchToDarkMode: 'Switch to dark mode',
+    signOutAria: 'Sign out',
 
-  finishSignInTitle: { en: 'Finish signing in', fr: 'Terminer la connexion' },
-  finishSignInBody: {
-    en: 'Click below to complete your sign-in.',
-    fr: 'Cliquez ci-dessous pour terminer votre connexion.',
-  },
-  continueButton: { en: 'Continue', fr: 'Continuer' },
-  signingInButton: { en: 'Signing you in…', fr: 'Connexion en cours…' },
-  backToSignIn: { en: 'Back to sign in', fr: 'Retour à la connexion' },
+    // Sign-in screen
+    signInSubtitle:
+      'This is an invitation-only research tool. Sign in with the account you were invited with to submit examples.',
+    loadingSignIn: 'Loading sign-in…',
+    orDivider: 'or',
+    noGoogleAccount: "No Google account? Sign in with just your email instead.",
 
-  accessDeniedTitle: { en: 'Access denied', fr: 'Accès refusé' },
-  accessDeniedBody: {
-    en: "{email} isn't on the list of invited contributors yet. If you believe this is a mistake, please reach out to the project organizer to be added.",
-    fr: '{email} ne figure pas encore sur la liste des contributeurs invités. Si vous pensez qu\u2019il s\u2019agit d\u2019une erreur, contactez l\u2019organisateur du projet pour être ajouté(e).',
-  },
-  tryDifferentAccount: { en: 'Try a different account', fr: 'Essayer un autre compte' },
+    // Email magic-link form
+    emailAddressLabel: 'Email address',
+    emailPlaceholder: 'you@university.edu',
+    sendLinkButton: 'Send link',
+    checkInboxTitle: 'Check your inbox',
+    checkInboxBody: 'If {email} is on the invite list, a sign-in link just landed there. It expires in 15 minutes.',
+    useDifferentEmail: 'Use a different email',
 
-  switchToLightMode: { en: 'Switch to light mode', fr: 'Passer au mode clair' },
-  switchToDarkMode: { en: 'Switch to dark mode', fr: 'Passer au mode sombre' },
-  signOutAria: { en: 'Sign out', fr: 'Se déconnecter' },
-  switchToFrench: { en: 'Switch to French', fr: 'Passer en français' },
-  switchToEnglish: { en: 'Switch to English', fr: 'Passer en anglais' },
+    // Complete-sign-in (magic link landing) screen
+    finishSignInTitle: 'Finish signing in',
+    finishSignInBody: 'Click below to complete your sign-in.',
+    continueButton: 'Continue',
+    signingInButton: 'Signing you in…',
+    backToSignIn: 'Back to sign in',
 
-  sourceTextLabel: { en: 'Source text', fr: 'Texte source' },
-  sourceTextTooltip: {
-    en: 'Paste the original text, in its source language.',
-    fr: 'Collez le texte original, dans sa langue source.',
-  },
-  sourceLanguageLabel: { en: 'Source language', fr: 'Langue source' },
-  targetTextLabel: { en: 'Target text', fr: 'Texte cible' },
-  targetTextTooltip: {
-    en: 'Paste the (imperfect or difficult) translation.',
-    fr: 'Collez la traduction (imparfaite ou difficile).',
-  },
-  targetLanguageLabel: { en: 'Target language', fr: 'Langue cible' },
-  explanationLabel: {
-    en: 'Why is this translation difficult?',
-    fr: 'Pourquoi cette traduction est-elle difficile\u00a0?',
-  },
-  explanationPlaceholder: {
-    en: 'e.g. terminology, ambiguity, idiomatic expression, cultural reference, wordplay, domain-specific vocabulary…',
-    fr: 'ex. : terminologie, ambiguïté, expression idiomatique, référence culturelle, jeu de mots, vocabulaire spécialisé…',
-  },
-  categoryLabel: { en: 'Category', fr: 'Catégorie' },
-  selectCategoryPlaceholder: { en: 'Select a category…', fr: 'Sélectionnez une catégorie…' },
-  difficultyLabel: { en: 'Difficulty', fr: 'Difficulté' },
-  difficultyAriaLabel: { en: '{n} out of 10 — {label}', fr: '{n} sur 10 — {label}' },
-  tagsLabel: { en: 'Tags', fr: 'Étiquettes' },
-  tagsTooltip: {
-    en: "Add keywords like 'medical', 'finance', or 'biology' to help future filtering.",
-    fr: 'Ajoutez des mots-clés comme «\u00a0médical\u00a0», «\u00a0finance\u00a0» ou «\u00a0biologie\u00a0» pour faciliter le filtrage ultérieur.',
-  },
-  tagsPlaceholder: { en: 'medical, finance, biology…', fr: 'médical, finance, biologie…' },
-  removeTagAria: { en: 'Remove tag {tag}', fr: 'Supprimer l\u2019étiquette {tag}' },
+    // Access denied screen
+    accessDeniedTitle: 'Access denied',
+    accessDeniedBody:
+      "{email} isn't on the list of invited contributors yet. If you believe this is a mistake, please reach out to the project organizer to be added.",
+    tryDifferentAccount: 'Try a different account',
 
-  consentLabel: {
-    en: 'This example may be used in a public dataset',
-    fr: 'Cet exemple peut être utilisé dans un jeu de données public',
-  },
-  consentDescription: {
-    en: 'If checked, this submission (including the text you entered) may be released as part of a publicly shared research dataset. Leave unchecked to keep it for internal research use only.',
-    fr: 'Si cette case est cochée, cette soumission (y compris le texte saisi) pourra être publiée dans le cadre d\u2019un jeu de données de recherche partagé publiquement. Laissez la case décochée pour un usage de recherche interne uniquement.',
-  },
+    // App shell
+    checkingAccess: 'Checking access…',
+    projectSubtitleMain: 'Help us build a high-quality dataset of challenging translation examples.',
 
-  submitButton: { en: 'Submit example', fr: 'Soumettre l\u2019exemple' },
-  submittingButton: { en: 'Submitting…', fr: 'Envoi en cours…' },
+    // Submission form fields
+    sourceTextLabel: 'Source text',
+    sourceTextTooltip: 'Paste the original text, in its source language.',
+    sourceLanguageLabel: 'Source language',
+    targetTextLabel: 'Target text',
+    targetTextTooltip: 'Paste the (imperfect or difficult) translation.',
+    targetLanguageLabel: 'Target language',
 
-  validationSourceText: { en: 'Source text is required.', fr: 'Le texte source est requis.' },
-  validationTargetText: { en: 'Target text is required.', fr: 'Le texte cible est requis.' },
-  validationExplanation: {
-    en: 'Please explain why this is difficult.',
-    fr: 'Veuillez expliquer pourquoi cette traduction est difficile.',
-  },
-  validationCategory: { en: 'Please choose a category.', fr: 'Veuillez choisir une catégorie.' },
-  validationDifficulty: { en: 'Please rate the difficulty.', fr: 'Veuillez évaluer la difficulté.' },
-  validationSourceLanguage: {
-    en: 'Please select the source language.',
-    fr: 'Veuillez sélectionner la langue source.',
-  },
-  validationTargetLanguage: {
-    en: 'Please select the target language.',
-    fr: 'Veuillez sélectionner la langue cible.',
-  },
-  formHasErrors: {
-    en: 'Please fix the highlighted fields before submitting.',
-    fr: 'Veuillez corriger les champs surlignés avant de soumettre.',
-  },
-  submitSuccess: {
-    en: 'Thank you! Your translation example has been submitted.',
-    fr: 'Merci\u00a0! Votre exemple de traduction a été envoyé.',
-  },
-  submitGenericError: {
-    en: 'Something went wrong while submitting. Please try again.',
-    fr: 'Une erreur est survenue lors de l\u2019envoi. Veuillez réessayer.',
-  },
+    // Submission guidelines notice (shown above the form fields)
+    guidelinesTitle: 'Before you submit',
+    guidelinesTranslatability:
+      'Make sure your example can be understood and translated by a human using only the information provided here. If extra context is needed — for example, a regional variant like French (France) vs. French (Canada), or background not present in the text — add it in the "Additional information" field below.',
+    guidelinesConfidentiality:
+      "Please don't include confidential, proprietary, or personal information in your example. Submissions are visible to the research team administering this project.",
 
-  selectLanguagePlaceholder: { en: 'Select a language…', fr: 'Sélectionnez une langue…' },
-  searchLanguagesPlaceholder: { en: 'Search languages…', fr: 'Rechercher une langue…' },
-  noMatches: { en: 'No matches', fr: 'Aucun résultat' },
-  detectingLanguage: { en: 'Detecting language…', fr: 'Détection de la langue…' },
-  detectedLanguagePrefix: { en: 'Detected language: {name}', fr: 'Langue détectée\u00a0: {name}' },
-  languageUndetermined: {
-    en: 'Language could not be determined.',
-    fr: 'La langue n\u2019a pas pu être déterminée.',
-  },
-} satisfies Record<string, Record<Locale, string>>;
+    additionalInfoLabel: 'Additional information to consider for the translation',
+    additionalInfoTooltip:
+      'Optional. Anything a human translator would need but that isn\u2019t in the text itself — a regional language variant, missing context, intended audience, etc.',
+    additionalInfoPlaceholder:
+      'e.g. this was translated into French (France) rather than French (Canada); the audience is a medical professional; this quote is from a 1990s news article…',
 
-export type StringKey = keyof typeof STRINGS;
+    explanationLabel: 'Why is this translation difficult?',
+    explanationPlaceholder:
+      'e.g. terminology, ambiguity, idiomatic expression, cultural reference, wordplay, domain-specific vocabulary…',
+    categoryLabel: 'Category',
+    selectCategoryPlaceholder: 'Select a category…',
+    difficultyLabel: 'Difficulty',
+    difficultyAriaLabel: '{n} out of 10 — {label}',
+    tagsLabel: 'Tags',
+    tagsTooltip: "Add keywords like 'medical', 'finance', or 'biology' to help future filtering.",
+    tagsPlaceholder: 'medical, finance, biology…',
+    removeTagAria: 'Remove tag {tag}',
+    anonymousLabel: 'Submit anonymously',
+    anonymousDescription:
+      "If checked, your name and email won't be recorded with this submission. We'll label it with a random nickname instead, so the research team can still tell submissions from the same session apart without knowing who submitted them.",
+    consentLabel: 'This example may be used in a public dataset',
+    consentDescription:
+      'If checked, this submission (including the text you entered) may be released as part of a publicly shared research dataset. Leave unchecked to keep it for internal research use only. Before opting in, double-check that your example doesn\u2019t contain confidential or personal information.',
+    creditLabel: 'I\u2019d like to be listed as a contributor in the public dataset credits',
+    creditDescription:
+      'Your account name/email are never used for this automatically — you choose exactly what to display below, independent of whether you submitted anonymously.',
+    creditNameLabel: 'Name to display in the credits',
+    creditNamePlaceholder: 'e.g. Jane D., or a pseudonym',
+    validationCreditName: 'Please enter a name to display, or uncheck the box above.',
+    submitButton: 'Submit example',
+    submittingButton: 'Submitting…',
+    submitSuccess: 'Thank you! Your translation example has been submitted.',
+    formHasErrors: 'Please fix the highlighted fields before submitting.',
+    submitGenericError: 'Something went wrong while submitting. Please try again.',
+    validationSourceText: 'Source text is required.',
+    validationTargetText: 'Target text is required.',
+    validationExplanation: 'Please explain why this is difficult.',
+    validationCategory: 'Please choose a category.',
+    validationDifficulty: 'Please rate the difficulty.',
+    validationSourceLanguage: 'Please select the source language.',
+    validationTargetLanguage: 'Please select the target language.',
+
+    // Language dropdown (for source/target text language, not UI language)
+    selectLanguagePlaceholder: 'Select a language…',
+    searchLanguagesPlaceholder: 'Search languages…',
+    noMatches: 'No matches',
+    detectingLanguage: 'Detecting language…',
+    detectedLanguagePrefix: 'Detected language: {name}',
+    languageUndetermined: 'Language could not be determined.',
+  },
+  fr: {
+    // Header
+    switchToFrench: 'Passer en français',
+    switchToEnglish: 'Switch to English',
+    switchToLightMode: 'Passer au mode clair',
+    switchToDarkMode: 'Passer au mode sombre',
+    signOutAria: 'Se déconnecter',
+
+    // Sign-in screen
+    signInSubtitle:
+      "Cet outil de recherche est réservé aux personnes invitées. Connectez-vous avec le compte utilisé pour votre invitation afin de soumettre des exemples.",
+    loadingSignIn: 'Chargement de la connexion…',
+    orDivider: 'ou',
+    noGoogleAccount: "Pas de compte Google ? Connectez-vous simplement avec votre e-mail.",
+
+    // Email magic-link form
+    emailAddressLabel: 'Adresse e-mail',
+    emailPlaceholder: 'vous@universite.fr',
+    sendLinkButton: 'Envoyer le lien',
+    checkInboxTitle: 'Consultez votre boîte de réception',
+    checkInboxBody:
+      "Si {email} figure sur la liste des invités, un lien de connexion vient d'y être envoyé. Il expire dans 15 minutes.",
+    useDifferentEmail: 'Utiliser une autre adresse e-mail',
+
+    // Complete-sign-in (magic link landing) screen
+    finishSignInTitle: 'Terminer la connexion',
+    finishSignInBody: 'Cliquez ci-dessous pour terminer votre connexion.',
+    continueButton: 'Continuer',
+    signingInButton: 'Connexion en cours…',
+    backToSignIn: 'Retour à la connexion',
+
+    // Access denied screen
+    accessDeniedTitle: 'Accès refusé',
+    accessDeniedBody:
+      "{email} ne figure pas encore sur la liste des contributeurs invités. Si vous pensez qu'il s'agit d'une erreur, contactez l'organisateur du projet pour être ajouté.",
+    tryDifferentAccount: 'Essayer un autre compte',
+
+    // App shell
+    checkingAccess: "Vérification de l'accès…",
+    projectSubtitleMain:
+      'Aidez-nous à construire un jeu de données de haute qualité rassemblant des exemples de traduction difficiles.',
+
+    // Submission form fields
+    sourceTextLabel: 'Texte source',
+    sourceTextTooltip: 'Collez le texte original, dans sa langue source.',
+    sourceLanguageLabel: 'Langue source',
+    targetTextLabel: 'Texte cible',
+    targetTextTooltip: 'Collez la traduction (imparfaite ou difficile).',
+    targetLanguageLabel: 'Langue cible',
+
+    // Submission guidelines notice (shown above the form fields)
+    guidelinesTitle: 'Avant de soumettre',
+    guidelinesTranslatability:
+      "Assurez-vous que votre exemple peut être compris et traduit par un humain à partir uniquement des informations fournies ici. Si un contexte supplémentaire est nécessaire — par exemple une variante régionale comme le français (France) par rapport au français (Canada), ou des informations absentes du texte — ajoutez-les dans le champ « Informations complémentaires » ci-dessous.",
+    guidelinesConfidentiality:
+      "Merci de ne pas inclure d'informations confidentielles, protégées ou personnelles dans votre exemple. Les soumissions sont visibles par l'équipe de recherche responsable de ce projet.",
+
+    additionalInfoLabel: 'Informations complémentaires à considérer pour la traduction',
+    additionalInfoTooltip:
+      "Facultatif. Tout ce dont un traducteur humain aurait besoin mais qui ne figure pas dans le texte lui-même\u00a0: une variante régionale de la langue, un contexte manquant, le public visé, etc.",
+    additionalInfoPlaceholder:
+      "ex.\u00a0: ceci a été traduit en français (France) plutôt qu'en français (Canada)\u00a0; le public visé est un professionnel de la santé\u00a0; cette citation provient d'un article de presse des années 1990…",
+
+    explanationLabel: 'Pourquoi cette traduction est-elle difficile ?',
+    explanationPlaceholder:
+      'ex. terminologie, ambiguïté, expression idiomatique, référence culturelle, jeu de mots, vocabulaire spécialisé…',
+    categoryLabel: 'Catégorie',
+    selectCategoryPlaceholder: 'Sélectionnez une catégorie…',
+    difficultyLabel: 'Difficulté',
+    difficultyAriaLabel: '{n} sur 10 — {label}',
+    tagsLabel: 'Étiquettes',
+    tagsTooltip:
+      "Ajoutez des mots-clés comme « médical », « finance » ou « biologie » pour faciliter un futur filtrage.",
+    tagsPlaceholder: 'médical, finance, biologie…',
+    removeTagAria: "Supprimer l'étiquette {tag}",
+    anonymousLabel: 'Soumettre anonymement',
+    anonymousDescription:
+      "Si cette case est cochée, votre nom et votre e-mail ne seront pas enregistrés avec cette soumission. Un pseudonyme aléatoire sera utilisé à la place, afin que l'équipe de recherche puisse distinguer les soumissions d'une même session sans savoir qui les a envoyées.",
+    consentLabel: 'Cet exemple peut être utilisé dans un jeu de données public',
+    consentDescription:
+      "Si cette case est cochée, cette soumission (y compris le texte saisi) pourra être publiée dans un jeu de données de recherche accessible au public. Laissez la case décochée pour un usage de recherche interne uniquement. Avant de cocher cette case, vérifiez que votre exemple ne contient pas d'informations confidentielles ou personnelles.",
+    creditLabel: "Je souhaite être mentionné(e) comme contributeur/contributrice dans les crédits du jeu de données public",
+    creditDescription:
+      "Le nom ou l'e-mail de votre compte ne sont jamais utilisés automatiquement pour cela\u00a0: vous choisissez exactement ce qui sera affiché ci-dessous, indépendamment du fait que vous ayez soumis anonymement ou non.",
+    creditNameLabel: 'Nom à afficher dans les crédits',
+    creditNamePlaceholder: 'ex.\u00a0: Jane D., ou un pseudonyme',
+    validationCreditName: 'Veuillez indiquer un nom à afficher, ou décochez la case ci-dessus.',
+    submitButton: "Soumettre l'exemple",
+    submittingButton: 'Envoi en cours…',
+    submitSuccess: 'Merci ! Votre exemple de traduction a bien été soumis.',
+    formHasErrors: 'Veuillez corriger les champs en surbrillance avant de soumettre.',
+    submitGenericError: "Une erreur s'est produite lors de l'envoi. Veuillez réessayer.",
+    validationSourceText: 'Le texte source est requis.',
+    validationTargetText: 'Le texte cible est requis.',
+    validationExplanation: 'Veuillez expliquer pourquoi ce texte est difficile.',
+    validationCategory: 'Veuillez choisir une catégorie.',
+    validationDifficulty: 'Veuillez évaluer la difficulté.',
+    validationSourceLanguage: 'Veuillez sélectionner la langue source.',
+    validationTargetLanguage: 'Veuillez sélectionner la langue cible.',
+
+    // Language dropdown (for source/target text language, not UI language)
+    selectLanguagePlaceholder: 'Sélectionnez une langue…',
+    searchLanguagesPlaceholder: 'Rechercher une langue…',
+    noMatches: 'Aucun résultat',
+    detectingLanguage: 'Détection de la langue…',
+    detectedLanguagePrefix: 'Langue détectée : {name}',
+    languageUndetermined: "La langue n'a pas pu être déterminée.",
+  },
+};
 
 /**
- * Difficulty scale labels (index 0 = difficulty 1, index 9 = difficulty
- * 10), per locale.
+ * Displayed category labels. The `value` actually stored/submitted stays
+ * the fixed English key (from CATEGORY_OPTIONS in types/index.ts) — only
+ * what's shown to the user changes with locale — so the "Category"
+ * column in the spreadsheet is always consistent regardless of which
+ * language a contributor used.
  */
+export const CATEGORY_LABELS: Record<Category, Record<Locale, string>> = {
+  Terminology: { en: 'Terminology', fr: 'Terminologie' },
+  Grammar: { en: 'Grammar', fr: 'Grammaire' },
+  Syntax: { en: 'Syntax', fr: 'Syntaxe' },
+  Ambiguity: { en: 'Ambiguity', fr: 'Ambiguïté' },
+  Idiom: { en: 'Idiom', fr: 'Idiome' },
+  'Cultural reference': { en: 'Cultural reference', fr: 'Référence culturelle' },
+  'Named entities': { en: 'Named entities', fr: 'Entités nommées' },
+  Formatting: { en: 'Formatting', fr: 'Mise en forme' },
+  'Scientific language': { en: 'Scientific language', fr: 'Langage scientifique' },
+  'Legal language': { en: 'Legal language', fr: 'Langage juridique' },
+  'Medical language': { en: 'Medical language', fr: 'Langage médical' },
+  Other: { en: 'Other', fr: 'Autre' },
+};
+
+/** Difficulty scale labels, index 0 = difficulty 1 through index 9 = difficulty 10. */
 export const DIFFICULTY_LABELS: Record<Locale, string[]> = {
   en: [
     'Trivial',
@@ -167,44 +267,15 @@ export const DIFFICULTY_LABELS: Record<Locale, string[]> = {
     'Nearly untranslatable',
   ],
   fr: [
-    'Trivial',
+    'Triviale',
     'Très facile',
     'Facile',
-    'Assez facile',
-    'Modéré',
-    'Assez difficile',
+    'Plutôt facile',
+    'Modérée',
+    'Plutôt difficile',
     'Difficile',
     'Très difficile',
     'Extrêmement difficile',
     'Presque intraduisible',
   ],
 };
-
-/**
- * Display labels for each fixed Category value. The underlying value
- * stored in the spreadsheet (e.g. "Cultural reference") never changes
- * with locale — only what's shown in the dropdown does.
- */
-export const CATEGORY_LABELS: Record<Category, Record<Locale, string>> = {
-  Terminology: { en: 'Terminology', fr: 'Terminologie' },
-  Grammar: { en: 'Grammar', fr: 'Grammaire' },
-  Syntax: { en: 'Syntax', fr: 'Syntaxe' },
-  Ambiguity: { en: 'Ambiguity', fr: 'Ambiguïté' },
-  Idiom: { en: 'Idiom', fr: 'Expression idiomatique' },
-  'Cultural reference': { en: 'Cultural reference', fr: 'Référence culturelle' },
-  'Named entities': { en: 'Named entities', fr: 'Entités nommées' },
-  Formatting: { en: 'Formatting', fr: 'Mise en forme' },
-  'Scientific language': { en: 'Scientific language', fr: 'Langage scientifique' },
-  'Legal language': { en: 'Legal language', fr: 'Langage juridique' },
-  'Medical language': { en: 'Medical language', fr: 'Langage médical' },
-  Other: { en: 'Other', fr: 'Autre' },
-};
-
-// Sanity check at module load, in dev, that every Category has a label.
-// (Not a runtime error path in production — just documents the invariant.)
-CATEGORY_OPTIONS.forEach((c) => {
-  if (!CATEGORY_LABELS[c]) {
-    // eslint-disable-next-line no-console
-    console.warn(`Missing CATEGORY_LABELS entry for category "${c}"`);
-  }
-});
