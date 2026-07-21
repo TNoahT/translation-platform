@@ -68,6 +68,20 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
     setForm((prev) => (prev.targetLanguageManual ? prev : { ...prev, targetLanguage: code ?? '' })),
   );
 
+  // Prefill the public-dataset display name if the submission is not anonymous.
+  // Clears the field if the user checks the anonymous option later
+  useEffect(() => {
+    setForm((prev) => {
+      if (prev.creditAsContributor && !prev.anonymous && !prev.creditName.trim()) {
+        return { ...prev, creditName: user.name };
+      }
+      if (prev.anonymous && prev.creditName === user.name) {
+        return { ...prev, creditName: '' };
+      }
+      return prev;
+    });
+  }, [form.creditAsContributor, form.anonymous, user.name]);
+
   function validate(): boolean {
     const next: FieldErrors = {};
     if (!form.sourceText.trim()) next.sourceText = t('validationSourceText');
@@ -240,6 +254,7 @@ export function SubmissionForm({ user }: SubmissionFormProps) {
             <TextField
               id="creditName"
               label={t('creditNameLabel')}
+              tooltip={t('creditNameTooltip')}
               placeholder={t('creditNamePlaceholder')}
               required
               maxLength={100}

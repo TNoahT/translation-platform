@@ -97,6 +97,8 @@ export const TRANSLATIONS: Record<Locale, Dictionary> = {
     creditDescription:
       'Your account name/email are never used for this automatically — you choose exactly what to display below, independent of whether you submitted anonymously.',
     creditNameLabel: 'Name to display in the credits',
+    creditNameTooltip:
+      'Pre-filled with your account name — feel free to change it to a nickname or however you\u2019d like to be credited.',
     creditNamePlaceholder: 'e.g. Jane D., or a pseudonym',
     validationCreditName: 'Please enter a name to display, or uncheck the box above.',
     submitButton: 'Submit example',
@@ -205,6 +207,8 @@ export const TRANSLATIONS: Record<Locale, Dictionary> = {
     creditDescription:
       "Le nom ou l'e-mail de votre compte ne sont jamais utilisés automatiquement pour cela\u00a0: vous choisissez exactement ce qui sera affiché ci-dessous, indépendamment du fait que vous ayez soumis anonymement ou non.",
     creditNameLabel: 'Nom à afficher dans les crédits',
+    creditNameTooltip:
+      "Pré-rempli avec le nom associé à votre compte\u00a0: modifiez-le librement pour un pseudonyme ou toute autre façon dont vous souhaitez être mentionné(e).",
     creditNamePlaceholder: 'ex.\u00a0: Jane D., ou un pseudonyme',
     validationCreditName: 'Veuillez indiquer un nom à afficher, ou décochez la case ci-dessus.',
     submitButton: "Soumettre l'exemple",
